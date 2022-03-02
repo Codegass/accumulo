@@ -18,6 +18,8 @@
  */
 package org.apache.accumulo.core.util;
 
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -38,8 +40,8 @@ public class PairTest {
     Pair<Integer,String> pair1 = new Pair<>(25, "twenty-five");
     Pair<Integer,String> pair2 = new Pair<>(25, "twenty-five");
 
-    assertNotSame(pair1, pair2);
-    assertEquals(pair1.hashCode(), pair2.hashCode());
+    assumeThat(pair1, sameInstance(pair2)); //make sure the arrangement is correct
+    assertEquals(pair1.hashCode(), pair2.hashCode());//assert
   }
 
   /**
