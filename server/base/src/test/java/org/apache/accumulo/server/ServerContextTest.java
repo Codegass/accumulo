@@ -18,8 +18,10 @@
  */
 package org.apache.accumulo.server;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assume.assumeThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -66,7 +68,7 @@ public class ServerContextTest {
   public void testSasl() throws Exception {
 
     testUser.doAs((PrivilegedExceptionAction<Void>) () -> {
-
+      //Arrangement Mock
       Properties clientProps = new Properties();
       clientProps.setProperty(ClientProperty.SASL_ENABLED.getKey(), "true");
       clientProps.setProperty(ClientProperty.SASL_KERBEROS_SERVER_PRIMARY.getKey(), "accumulo");
@@ -108,8 +110,12 @@ public class ServerContextTest {
 
       EasyMock.replay(factory, context, siteConfig);
 
-      assertEquals(ThriftServerType.SASL, context.getThriftServerType());
+      assumeThat(context.getThriftServerType(),is(ThriftServerType.SASL));
+
+      //Action
       SaslServerConnectionParams saslParams = context.getSaslParams();
+
+      //Assert
       assertEquals(new SaslServerConnectionParams(conf, token), saslParams);
       assertEquals(username, saslParams.getPrincipal());
 
