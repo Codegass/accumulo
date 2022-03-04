@@ -19,6 +19,7 @@
 package org.apache.accumulo.core.util;
 
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -36,11 +37,11 @@ public class PairTest {
    * Test method for {@link org.apache.accumulo.core.util.Pair#hashCode()} with same value input.
    */
   @Test
-  public void testHashMethodSameValue() {
+  public void testHashMethodSame() {
     Pair<Integer,String> pair1 = new Pair<>(25, "twenty-five");
     Pair<Integer,String> pair2 = new Pair<>(25, "twenty-five");
 
-    assumeThat(pair1, sameInstance(pair2)); //make sure the arrangement is correct
+    assumeThat(pair1, not(sameInstance(pair2))); //make sure the arrangement is correct
     assertEquals(pair1.hashCode(), pair2.hashCode());//assert
   }
 
@@ -48,7 +49,7 @@ public class PairTest {
    * Test method for {@link org.apache.accumulo.core.util.Pair#hashCode()} with Null value input.
    */
   @Test
-  public void testHashMethodNullValue() {
+  public void testHashMethodNull() {
     Pair<Integer,String> pair2 = new Pair<>(25, "twenty-five");
     Pair<Integer,String> pair3 = new Pair<>(null, null);
 
@@ -59,7 +60,7 @@ public class PairTest {
    * Test method for {@link org.apache.accumulo.core.util.Pair#hashCode()} with different value input.
    */
   @Test
-  public void testHashMethodDiffValue() {
+  public void testHashMethodDiff() {
     Pair<Integer,String> pair1 = new Pair<>(25, "twenty-five");
     Pair<Integer,String> pair4 = new Pair<>(25, "twentyfive");
     Pair<Integer,String> pair5 = new Pair<>(225, "twenty-five");
