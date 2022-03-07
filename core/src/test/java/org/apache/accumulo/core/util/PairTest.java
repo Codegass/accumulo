@@ -53,7 +53,7 @@ public class PairTest {
     Pair<Integer,String> pair2 = new Pair<>(25, "twenty-five");
     Pair<Integer,String> pair3 = new Pair<>(null, null);
 
-    assertNotSame(pair2, pair3);
+    assertNotEquals(pair2.hashCode(), pair3.hashCode());
   }
 
   /**
