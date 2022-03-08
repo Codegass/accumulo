@@ -21,9 +21,15 @@ package org.apache.accumulo.server.util.time;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class BaseRelativeTimeTest {
+
+  private BogusTime futureAdvice;
+  private BogusTime pastAdvice;
+  private BogusTime local;
+  private BaseRelativeTime brt;
 
   static class BogusTime implements ProvidesTime {
     public long value = 0;
@@ -32,6 +38,21 @@ public class BaseRelativeTimeTest {
     public long currentTime() {
       return value;
     }
+  }
+
+  @Before
+  public void setup(){
+    //Arrangement
+    futureAdvice = new BogusTime();
+    pastAdvice = new BogusTime();
+    local = new BogusTime();
+    local.value = futureAdvice.value = pastAdvice.value = System.currentTimeMillis();
+    // Ten seconds into the future
+    futureAdvice.value += 10000;
+    // Ten seconds into the past
+    pastAdvice.value -= 10000;
+
+    brt = new BaseRelativeTime(local);
   }
 
   @Test
@@ -47,46 +68,49 @@ public class BaseRelativeTimeTest {
   }
 
   @Test
-  public void testFutureTime() {
-    BogusTime advice = new BogusTime();
-    BogusTime local = new BogusTime();
-    local.value = advice.value = System.currentTimeMillis();
-    // Ten seconds into the future
-    advice.value += 10000;
-
-    BaseRelativeTime brt = new BaseRelativeTime(local);
-    assertEquals(brt.currentTime(), local.value);
-    brt.updateTime(advice.value);
+  public void testFutureTimeOnce() {
+    //Action
+    brt.updateTime(futureAdvice.value);
     long once = brt.currentTime();
-    assertTrue(once < advice.value);
+    //Assert
+    assertTrue(once < futureAdvice.value);
     assertTrue(once > local.value);
-
-    for (int i = 0; i < 100; i++) {
-      brt.updateTime(advice.value);
-    }
-    long many = brt.currentTime();
-    assertTrue(many > once);
-    assertTrue("after much advice, relative time is still closer to local time",
-        (advice.value - many) < (once - local.value));
   }
 
   @Test
-  public void testPastTime() {
-    BogusTime advice = new BogusTime();
-    BogusTime local = new BogusTime();
-    local.value = advice.value = System.currentTimeMillis();
-    // Ten seconds into the past
-    advice.value -= 10000;
-
-    BaseRelativeTime brt = new BaseRelativeTime(local);
-    brt.updateTime(advice.value);
+  public void testFutureTimeManyTimes() {
+    //Action
+    brt.updateTime(futureAdvice.value);
     long once = brt.currentTime();
-    assertTrue(once < local.value);
-    brt.updateTime(advice.value);
-    long twice = brt.currentTime();
-    assertTrue("Time cannot go backwards", once <= twice);
-    brt.updateTime(advice.value - 10000);
-    assertTrue("Time cannot go backwards", once <= twice);
+
+    for (int i = 0; i < 100; i++) {
+      brt.updateTime(futureAdvice.value);
+    }
+    long many = brt.currentTime();
+
+    //Assert
+    assertTrue(many > once);
+    assertTrue("after much advice, relative time is still closer to local time",
+            (futureAdvice.value - many) < (once - local.value));
   }
 
+  @Test
+  public void testPastTimeOnce() {
+    //Action
+    brt.updateTime(pastAdvice.value);
+    long once = brt.currentTime();
+    //Assert
+    assertTrue(once < local.value);
+  }
+
+  @Test
+  public void testPastTimeTwice() {
+    //Action
+    brt.updateTime(pastAdvice.value);
+    long once = brt.currentTime();
+    brt.updateTime(pastAdvice.value);
+    long twice = brt.currentTime();
+    //Assert
+    assertTrue("Time cannot go backwards", once <= twice);
+  }
 }
