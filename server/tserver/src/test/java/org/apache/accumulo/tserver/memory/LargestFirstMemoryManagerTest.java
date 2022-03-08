@@ -119,7 +119,7 @@ public class LargestFirstMemoryManagerTest {
   }
 
   @Test
-  public void testOnefinishedOneProcessingOneFilledUp() {
+  public void testOneFinishedOneProcessingOneFilledUp() {
     // one finished, one in progress, one filled up
     tabletsToMinorCompact = mgr.tabletsToMinorCompact(tablets(t(k("a"), ZERO, HALF_GIG, 0),
             t(k("b"), ZERO, HALF_GIG + ONE_MEG, 0), t(k("c"), ZERO, HALF_GIG + (2 * ONE_MEG), 0),
