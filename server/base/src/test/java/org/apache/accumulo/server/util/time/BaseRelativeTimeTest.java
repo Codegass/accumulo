@@ -20,8 +20,6 @@ package org.apache.accumulo.server.util.time;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeThat;
-import static org.hamcrest.CoreMatchers.equalTo;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +53,6 @@ public class BaseRelativeTimeTest {
     pastAdvice.value -= 10000;
 
     brt = new BaseRelativeTime(local);
-    assumeThat(brt.currentTime(), equalTo(local.value));
   }
 
   @Test
@@ -103,7 +100,7 @@ public class BaseRelativeTimeTest {
     brt.updateTime(pastAdvice.value);
     long once = brt.currentTime();
     //Assert
-    assertTrue(once <= local.value);
+    assertTrue(once < local.value);
   }
 
   @Test
