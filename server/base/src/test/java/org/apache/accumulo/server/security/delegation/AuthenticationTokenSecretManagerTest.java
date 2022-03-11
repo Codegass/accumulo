@@ -172,45 +172,73 @@ public class AuthenticationTokenSecretManagerTest {
     assertEquals(pair.getValue(), id);
   }
 
-  @Test
-  public void testVerifyPassword() throws Exception {
+  public AuthenticationTokenSecretManager setupSecretManagerForPasswordTest() {
     // start of the test
     long then = System.currentTimeMillis();
 
     // 1 minute
     long tokenLifetime = MINUTES.toMillis(1);
     AuthenticationTokenSecretManager secretManager =
-        new AuthenticationTokenSecretManager(instanceId, tokenLifetime);
+            new AuthenticationTokenSecretManager(instanceId, tokenLifetime);
 
     // Add a current key
     secretManager
-        .addKey(new AuthenticationKey(1, then, then + tokenLifetime, keyGen.generateKey()));
+            .addKey(new AuthenticationKey(1, then, then + tokenLifetime, keyGen.generateKey()));
 
-    String principal = "user@EXAMPLE.COM";
+    return secretManager;
+  }
+
+  public AuthenticationTokenSecretManager setupPasswordForId(AuthenticationTokenSecretManager secretManager, AuthenticationTokenIdentifier id, String principal) throws Exception {
+
     Entry<Token<AuthenticationTokenIdentifier>,AuthenticationTokenIdentifier> pair =
-        secretManager.generateToken(principal, cfg);
+            secretManager.generateToken(principal, cfg);
     Token<AuthenticationTokenIdentifier> token = pair.getKey();
 
-    AuthenticationTokenIdentifier id = new AuthenticationTokenIdentifier();
     id.readFields(new DataInputStream(new ByteArrayInputStream(token.getIdentifier())));
 
+    return secretManager;
+  }
+
+  @Test
+  public void testVerifyPasswordForSameId() throws Exception{
+    //Arrangement
+    AuthenticationTokenSecretManager initSecretManager = setupSecretManagerForPasswordTest();
+
+    String principal = "user@EXAMPLE.COM";
+    AuthenticationTokenIdentifier id = new AuthenticationTokenIdentifier();
+    AuthenticationTokenSecretManager secretManager = setupPasswordForId(initSecretManager,id,principal);
+
+    //Expected value
     byte[] password = secretManager.retrievePassword(id);
 
+    //Assert
     // The passwords line up against multiple calls with the same ID
     assertArrayEquals(password, secretManager.retrievePassword(id));
+  }
 
-    // Make a second token for the same user
-    Entry<Token<AuthenticationTokenIdentifier>,AuthenticationTokenIdentifier> pair2 =
-        secretManager.generateToken(principal, cfg);
-    Token<AuthenticationTokenIdentifier> token2 = pair2.getKey();
-    // Reconstitute the token identifier (will happen when clients are involved)
+  @Test
+  public void testVerifyPasswordForDiffId() throws Exception {
+    //Arrangement
+    AuthenticationTokenSecretManager initSecretManager = setupSecretManagerForPasswordTest();
+
+    String principal = "user@EXAMPLE.COM";
+    AuthenticationTokenIdentifier id1 = new AuthenticationTokenIdentifier();
+    AuthenticationTokenSecretManager secretManager_id1 = setupPasswordForId(initSecretManager,id1,principal);
+
+    //Expected Value
+    byte[] password = secretManager_id1.retrievePassword(id1);
+
+    // Make a second id for the same user
     AuthenticationTokenIdentifier id2 = new AuthenticationTokenIdentifier();
-    id2.readFields(new DataInputStream(new ByteArrayInputStream(token2.getIdentifier())));
+    AuthenticationTokenSecretManager secretManager_id2 = setupPasswordForId(secretManager_id1,id2,principal);
 
+
+    //Action
     // Get the password
-    byte[] password2 = secretManager.retrievePassword(id2);
+    byte[] password2 = secretManager_id2.retrievePassword(id2);
 
-    // It should be different than the password for the first user.
+    //Assert
+    // It should be different from the password for the first user.
     assertFalse("Different tokens for the same user shouldn't have the same password",
         Arrays.equals(password, password2));
   }
