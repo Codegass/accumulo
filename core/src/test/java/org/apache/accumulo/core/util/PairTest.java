@@ -18,6 +18,9 @@
  */
 package org.apache.accumulo.core.util;
 
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -31,18 +34,37 @@ import org.junit.jupiter.api.Test;
 public class PairTest {
 
   /**
-   * Test method for {@link org.apache.accumulo.core.util.Pair#hashCode()}.
+   * Test method for {@link org.apache.accumulo.core.util.Pair#hashCode()} with same value input.
    */
   @Test
-  public void testHashMethod() {
+  public void testHashMethodSame() {
     Pair<Integer,String> pair1 = new Pair<>(25, "twenty-five");
     Pair<Integer,String> pair2 = new Pair<>(25, "twenty-five");
+
+    assumeThat(pair1, not(sameInstance(pair2))); //make sure the arrangement is correct
+    assertEquals(pair1.hashCode(), pair2.hashCode());//assert
+  }
+
+  /**
+   * Test method for {@link org.apache.accumulo.core.util.Pair#hashCode()} with Null value input.
+   */
+  @Test
+  public void testHashMethodNull() {
+    Pair<Integer,String> pair2 = new Pair<>(25, "twenty-five");
     Pair<Integer,String> pair3 = new Pair<>(null, null);
+
+    assertNotEquals(pair2.hashCode(), pair3.hashCode());
+  }
+
+  /**
+   * Test method for {@link org.apache.accumulo.core.util.Pair#hashCode()} with different value input.
+   */
+  @Test
+  public void testHashMethodDiff() {
+    Pair<Integer,String> pair1 = new Pair<>(25, "twenty-five");
     Pair<Integer,String> pair4 = new Pair<>(25, "twentyfive");
     Pair<Integer,String> pair5 = new Pair<>(225, "twenty-five");
-    assertNotSame(pair1, pair2);
-    assertEquals(pair1.hashCode(), pair2.hashCode());
-    assertNotSame(pair2, pair3);
+
     assertNotEquals(pair1.hashCode(), pair4.hashCode());
     assertNotEquals(pair1.hashCode(), pair5.hashCode());
   }
